@@ -6,7 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HelloJwtApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(HelloJwtApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(HelloJwtApplication.class, args);
+    }
+
 }
