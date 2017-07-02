@@ -6,15 +6,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BasicAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
     @Autowired
     public transient BasicUserDetailsService userDetailsService;
 
     @Override
-    protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken token)
-            throws AuthenticationException {
+    protected void additionalAuthenticationChecks(final UserDetails userDetails,
+            final UsernamePasswordAuthenticationToken token) throws AuthenticationException {
 
         if (token.getCredentials() == null || userDetails.getPassword() == null) {
             throw new BadCredentialsException("Invalid Credentials");
@@ -27,7 +29,7 @@ public class BasicAuthenticationProvider extends AbstractUserDetailsAuthenticati
     }
 
     @Override
-    protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication)
+    protected UserDetails retrieveUser(final String username, final UsernamePasswordAuthenticationToken authentication)
             throws AuthenticationException {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);

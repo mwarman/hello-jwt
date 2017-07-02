@@ -17,7 +17,7 @@ public class BasicUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        final Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("USER"));
 
         return new User("user", "aPassword", true, true, true, true, authorities);

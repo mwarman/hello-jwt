@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class LandingController {
-	
-	@RequestMapping("/")
-	String hello() {
-		return "hello world";
-	}
+
+    @RequestMapping("/api")
+    public String hello() {
+        return "hello world";
+    }
 
 }

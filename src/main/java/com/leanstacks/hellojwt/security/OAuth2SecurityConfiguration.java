@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -27,6 +28,9 @@ public class OAuth2SecurityConfiguration {
     private static final String SIGNING_KEY = "SigningKeyValue";
     private static final String RESOURCE_ID = "HelloJWT";
 
+    @Autowired
+    private transient BasicAuthenticationProvider authenticationProvider;
+
     @Bean
     public JwtAccessTokenConverter tokenConverter() {
         JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter();
@@ -42,14 +46,9 @@ public class OAuth2SecurityConfiguration {
     }
 
     @Bean
-    public BasicAuthenticationProvider basicAuthenticationProvider() {
-        return new BasicAuthenticationProvider();
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager() {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<AuthenticationProvider>();
-        authenticationProviders.add(basicAuthenticationProvider());
+        authenticationProviders.add(authenticationProvider);
 
         return new ProviderManager(authenticationProviders);
     }
@@ -59,16 +58,16 @@ public class OAuth2SecurityConfiguration {
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
         @Autowired
-        public AuthenticationManager authenticationManager;
+        private transient AuthenticationManager authenticationManager;
 
         @Autowired
-        public BasicUserDetailsService userDetailsService;
+        private transient BasicUserDetailsService userDetailsService;
 
         @Autowired
-        public JwtTokenStore tokenStore;
+        private transient JwtTokenStore tokenStore;
 
         @Autowired
-        public JwtAccessTokenConverter accessTokenConverter;
+        private transient JwtAccessTokenConverter accessTokenConverter;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -110,7 +109,7 @@ public class OAuth2SecurityConfiguration {
     protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
         @Autowired
-        public JwtTokenStore tokenStore;
+        private transient JwtTokenStore tokenStore;
 
         @Override
         public void configure(HttpSecurity http) throws Exception {
@@ -120,11 +119,26 @@ public class OAuth2SecurityConfiguration {
             http
             .csrf().disable()
             
+            .requestMatchers().antMatchers("/api/**").and()
+            
             .authorizeRequests()
             
-                .antMatchers("/").permitAll()
-                .antMatchers(HttpMethod.POST, "/login").permitAll()
-                .anyRequest().access("#oauth2.hasScope('read')");
+            // Allow all OPTIONS requests
+            .antMatchers(HttpMethod.OPTIONS).permitAll()
+            
+            // Allow requests to public Account Security APIs
+            .antMatchers(HttpMethod.GET, "/api").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/u/accounts").permitAll()
+            
+            // Allow requests to the Health Check API(s)
+            .antMatchers(HttpMethod.GET, "/api/o/actuators/health").permitAll()
+            
+            // Require Authorization
+            .anyRequest().access("#oauth2.hasScope('read')")
+            
+            .and()
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
             
             //@formatter:on
 
