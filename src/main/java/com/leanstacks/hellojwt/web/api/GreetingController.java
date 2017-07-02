@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leanstacks.hellojwt.model.Greeting;
 
 @RestController
-@RequestMapping("/greetings")
+@RequestMapping("/api/u/greetings")
 public class GreetingController {
 
     @RequestMapping(method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Greeting>> getGreetings() {
 
-        List<Greeting> greetings = new ArrayList<Greeting>();
+        final List<Greeting> greetings = new ArrayList<Greeting>();
 
         greetings.add(new Greeting("Hello World"));
         greetings.add(new Greeting("Hola Mundo"));
