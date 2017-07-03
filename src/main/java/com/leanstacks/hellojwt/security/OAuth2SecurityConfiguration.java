@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,10 +24,11 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
+@EnableConfigurationProperties(OAuth2Properties.class)
 public class OAuth2SecurityConfiguration {
 
-    private static final String SIGNING_KEY = "SigningKeyValue";
-    private static final String RESOURCE_ID = "HelloJWT";
+    @Autowired
+    private transient OAuth2Properties oauth2Properties;
 
     @Autowired
     private transient BasicAuthenticationProvider authenticationProvider;
@@ -34,8 +36,8 @@ public class OAuth2SecurityConfiguration {
     @Bean
     public JwtAccessTokenConverter tokenConverter() {
         JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter();
-        tokenConverter.setSigningKey(SIGNING_KEY);
-        tokenConverter.setVerifierKey(SIGNING_KEY);
+        tokenConverter.setSigningKey(oauth2Properties.getJwt().getSigningKey());
+        tokenConverter.setVerifierKey(oauth2Properties.getJwt().getSigningKey());
         return tokenConverter;
     }
 
@@ -56,6 +58,9 @@ public class OAuth2SecurityConfiguration {
     @Configuration
     @EnableAuthorizationServer
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+
+        @Autowired
+        private transient OAuth2Properties oauth2Properties;
 
         @Autowired
         private transient AuthenticationManager authenticationManager;
@@ -80,8 +85,10 @@ public class OAuth2SecurityConfiguration {
                     .authorizedGrantTypes("password", "refresh_token")
                     .authorities("USER")
                     .scopes("read", "write")
-                    .resourceIds(RESOURCE_ID)
-                    .secret("aSecret");
+                    .resourceIds(oauth2Properties.getResourceId())
+                    .secret("aSecret")
+                    .accessTokenValiditySeconds(oauth2Properties.getAccessTokenValiditySeconds())
+                    .refreshTokenValiditySeconds(oauth2Properties.getRefreshTokenValiditySeconds());
             
             //@formatter:on
 
@@ -107,6 +114,9 @@ public class OAuth2SecurityConfiguration {
     @Configuration
     @EnableResourceServer
     protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+
+        @Autowired
+        private transient OAuth2Properties oauth2Properties;
 
         @Autowired
         private transient JwtTokenStore tokenStore;
@@ -150,7 +160,7 @@ public class OAuth2SecurityConfiguration {
             //@formatter:off
             
             resources
-                .resourceId(RESOURCE_ID)
+                .resourceId(oauth2Properties.getResourceId())
                 .tokenStore(tokenStore);
             
             //@formatter:on
