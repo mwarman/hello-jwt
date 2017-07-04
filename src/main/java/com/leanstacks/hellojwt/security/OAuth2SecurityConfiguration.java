@@ -144,7 +144,8 @@ public class OAuth2SecurityConfiguration {
             .antMatchers(HttpMethod.GET, "/api/o/actuators/health").permitAll()
             
             // Require Authorization
-            .anyRequest().access("#oauth2.hasScope('read')")
+            // .anyRequest().access("#oauth2.hasScope('read')")
+            .anyRequest().hasAuthority("USER")
             
             .and()
             .sessionManagement()
