@@ -81,12 +81,11 @@ public class OAuth2SecurityConfiguration {
             
             clients
                 .inMemory()
-                    .withClient("aClient")
+                    .withClient("aBrowserClient")
                     .authorizedGrantTypes("password", "refresh_token")
-                    .authorities("USER")
+                    .authorities("ROLE_CLIENT")
                     .scopes("read", "write")
                     .resourceIds(oauth2Properties.getResourceId())
-                    .secret("aSecret")
                     .accessTokenValiditySeconds(oauth2Properties.getAccessTokenValiditySeconds())
                     .refreshTokenValiditySeconds(oauth2Properties.getRefreshTokenValiditySeconds());
             
